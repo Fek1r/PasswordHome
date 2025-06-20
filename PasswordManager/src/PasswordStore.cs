@@ -5,11 +5,12 @@ using System.Text.Json;
 
 public class PasswordStore
 {
-    private const string FileName = "passwords.json";
     private List<PasswordEntry> entries;
+    private string FileName;
 
-    public PasswordStore()
+    public PasswordStore(string username)
     {
+        FileName = $"passwords_{username}.json";
         Load();
     }
 
