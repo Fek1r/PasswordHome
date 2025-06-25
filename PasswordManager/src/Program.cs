@@ -33,12 +33,21 @@ class Program
             }
         }
 
-        passwordStore = new PasswordStore(currentUser);
-        RunPasswordManager();
+        if (currentUser == "Admin")
+        {
+            AdminPanel();
+        }
+        else
+        {
+            passwordStore = new PasswordStore(currentUser);
+            RunPasswordManager();
+        }
     }
 
     static string Register()
     {
+        Console.Clear();
+        Console.WriteLine("=== Registration ===");
         Console.Write("Enter username: ");
         string username = Console.ReadLine();
 
@@ -49,32 +58,45 @@ class Program
         if (success)
         {
             Console.WriteLine("Registration successful!");
+            Pause();
             return username;
         }
         else
         {
             Console.WriteLine("Username already exists.");
+            Pause();
             return null;
         }
     }
 
     static string Login()
     {
+        Console.Clear();
+        Console.WriteLine("=== Login ===");
         Console.Write("Enter username: ");
         string username = Console.ReadLine();
 
         Console.Write("Enter password: ");
         string password = Console.ReadLine();
 
+        if (username == "Admin" && password == "123456789")
+        {
+            Console.WriteLine("Admin login successful!");
+            Pause();
+            return "Admin";
+        }
+
         bool success = userStore.Login(username, password);
         if (success)
         {
             Console.WriteLine("Login successful!");
+            Pause();
             return username;
         }
         else
         {
             Console.WriteLine("Invalid credentials.");
+            Pause();
             return null;
         }
     }
@@ -84,10 +106,7 @@ class Program
         while (true)
         {
             Console.Clear();
-
             Console.WriteLine("=== Password Manager ===");
-
-            string currentUser = null;
 
             Console.WriteLine("\n1 - Add password 📥");
             Console.WriteLine("2 - Find password 🔎");
@@ -107,6 +126,7 @@ class Program
                     return;
                 default:
                     Console.WriteLine("Invalid input");
+                    Pause();
                     break;
             }
         }
@@ -122,6 +142,7 @@ class Program
 
         passwordStore.Add(resource, password);
         Console.WriteLine("Password saved.");
+        Pause();
     }
 
     static void FindPassword()
@@ -139,5 +160,62 @@ class Program
         {
             Console.WriteLine("Resource not found.");
         }
+        Pause();
+    }
+
+    static void AdminPanel()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("=== Admin Panel ===");
+            Console.WriteLine("1 - List all users 👥");
+            Console.WriteLine("2 - Delete a user ❌");
+            Console.WriteLine("3 - Exit to main menu 🔙");
+            Console.Write("\nChoice: ");
+            var input = Console.ReadLine();
+
+            switch (input)
+            {
+                case "1":
+                    var users = userStore.GetAllUsers();
+                    Console.WriteLine("\nRegistered users:");
+                    foreach (var u in users)
+                    {
+                        Console.WriteLine($"- {u.Username}");
+                    }
+                    Pause();
+                    break;
+
+                case "2":
+                    Console.Write("Enter username to delete: ");
+                    string userToDelete = Console.ReadLine();
+                    if (userToDelete == "Admin")
+                    {
+                        Console.WriteLine("Cannot delete Admin.");
+                    }
+                    else
+                    {
+                        bool deleted = userStore.DeleteUser(userToDelete);
+                        Console.WriteLine(deleted ? "User deleted." : "User not found.");
+                    }
+                    Pause();
+                    break;
+
+                case "3":
+                    return;
+
+                default:
+                    Console.WriteLine("Invalid input");
+                    Pause();
+                    break;
+            }
+        }
+    }
+
+    static void Pause()
+    {
+        Console.WriteLine("\nPress Enter to continue...");
+        Console.ReadLine();
     }
 }

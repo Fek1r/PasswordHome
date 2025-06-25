@@ -67,4 +67,22 @@ public class UserStore
     {
         return users.Any(u => u.Username == username && u.Password == password);
     }
+
+        public List<User> GetAllUsers()
+    {
+        return users;
+    }
+
+    public bool DeleteUser(string username)
+    {
+        var user = users.FirstOrDefault(u => u.Username == username);
+        if (user != null)
+        {
+            users.Remove(user);
+            Save();
+            return true;
+        }
+        return false;
+    }
+
 }
