@@ -1,221 +1,188 @@
+using PasswordManager.Models;
+using PasswordManager.Repositories;
+using PasswordManager.Services;
 using System;
 
-class Program
+namespace PasswordManager
 {
-    static UserStore userStore = new UserStore();
-    static PasswordStore passwordStore;
-
-    static void Main()
+    class Program
     {
-        Console.Clear();
-        Console.WriteLine("=== Password Manager ===");
+        private static string connectionString = "Host=localhost;Port=5433;Username=postgres;Password=10021711;Database=postgres";
 
-        string currentUser = null;
+        private static DatabaseService dbService;
+        private static UserRepository userRepository;
+        private static PasswordRepository passwordRepository;
 
-        while (currentUser == null)
-        {
-            Console.WriteLine("\n1 - Register ➡️");
-            Console.WriteLine("2 - Login ➡️");
-            Console.Write("\nChoice: ");
-            string choice = Console.ReadLine();
+        private static User currentUser;
 
-            switch (choice)
-            {
-                case "1":
-                    currentUser = Register();
-                    break;
-                case "2":
-                    currentUser = Login();
-                    break;
-                default:
-                    Console.WriteLine("Invalid choice.");
-                    break;
-            }
-        }
-
-        if (currentUser == "Admin")
-        {
-            AdminPanel();
-        }
-        else
-        {
-            passwordStore = new PasswordStore(currentUser);
-            RunPasswordManager();
-        }
-    }
-
-    static string Register()
-    {
-        Console.Clear();
-        Console.WriteLine("=== Registration ===");
-        Console.Write("Enter username: ");
-        string username = Console.ReadLine();
-
-        Console.Write("Enter password: ");
-        string password = Console.ReadLine();
-
-        bool success = userStore.Register(username, password);
-        if (success)
-        {
-            Console.WriteLine("Registration successful!");
-            Pause();
-            return username;
-        }
-        else
-        {
-            Console.WriteLine("Username already exists.");
-            Pause();
-            return null;
-        }
-    }
-
-    static string Login()
-    {
-        Console.Clear();
-        Console.WriteLine("=== Login ===");
-        Console.Write("Enter username: ");
-        string username = Console.ReadLine();
-
-        Console.Write("Enter password: ");
-        string password = Console.ReadLine();
-
-        if (username == "Admin" && password == "123456789")
-        {
-            Console.WriteLine("Admin login successful!");
-            Pause();
-            return "Admin";
-        }
-
-        bool success = userStore.Login(username, password);
-        if (success)
-        {
-            Console.WriteLine("Login successful!");
-            Pause();
-            return username;
-        }
-        else
-        {
-            Console.WriteLine("Invalid credentials.");
-            Pause();
-            return null;
-        }
-    }
-
-    static void RunPasswordManager()
-    {
-        while (true)
+        static void Main()
         {
             Console.Clear();
+            dbService = new DatabaseService(connectionString);
+            dbService.EnsureTablesExist();
+
+            userRepository = new UserRepository(connectionString);
+            passwordRepository = new PasswordRepository(connectionString);
+
             Console.WriteLine("=== Password Manager ===");
 
-            Console.WriteLine("\n1 - Add password 📥");
-            Console.WriteLine("2 - Find password 🔎");
-            Console.WriteLine("3 - Exit ➡️");
-            Console.Write("\nChoice: ");
-            var input = Console.ReadLine();
-
-            switch (input)
+            while (currentUser == null)
             {
-                case "1":
-                    AddPassword();
-                    break;
-                case "2":
-                    FindPassword();
-                    break;
-                case "3":
-                    return;
-                default:
-                    Console.WriteLine("Invalid input");
-                    Pause();
-                    break;
+                Console.WriteLine("\n1 - Register");
+                Console.WriteLine("2 - Login");
+                Console.Write("\nChoice: ");
+                var choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Register();
+                        break;
+                    case "2":
+                        Login();
+                        break;
+                    default:
+                        Console.WriteLine("Invalid option.");
+                        break;
+                }
+            }
+
+            if (currentUser.Username == "Admin")
+            {
+                RunAdminMenu();
+            }
+            else
+            {
+                RunUserMenu();
             }
         }
-    }
 
-    static void AddPassword()
-    {
-        Console.Write("Enter resource name: ");
-        string resource = Console.ReadLine();
-
-        Console.Write("Enter password: ");
-        string password = Console.ReadLine();
-
-        passwordStore.Add(resource, password);
-        Console.WriteLine("Password saved.");
-        Pause();
-    }
-
-    static void FindPassword()
-    {
-        Console.Write("Enter resource name to search: ");
-        string resource = Console.ReadLine();
-
-        string password = passwordStore.Find(resource);
-
-        if (password != null)
-        {
-            Console.WriteLine($"Password for {resource}: {password}");
-        }
-        else
-        {
-            Console.WriteLine("Resource not found.");
-        }
-        Pause();
-    }
-
-    static void AdminPanel()
-    {
-        while (true)
+        static void Register()
         {
             Console.Clear();
-            Console.WriteLine("=== Admin Panel ===");
-            Console.WriteLine("1 - List all users 👥");
-            Console.WriteLine("2 - Delete a user ❌");
-            Console.WriteLine("3 - Exit to main menu 🔙");
-            Console.Write("\nChoice: ");
-            var input = Console.ReadLine();
+            Console.WriteLine("=== Register ===");
+            Console.Write("Enter username: ");
+            var username = Console.ReadLine();
+            Console.Write("Enter password: ");
+            var password = Console.ReadLine();
 
-            switch (input)
+            var success = userRepository.Register(username, password);
+            Console.WriteLine(success ? "✅ Registered successfully!" : "❌ Username already exists.");
+        }
+
+        static void Login()
+        {
+            Console.Clear();
+            Console.WriteLine("=== Login ===");
+            Console.Write("Enter username: ");
+            var username = Console.ReadLine();
+            Console.Write("Enter password: ");
+            var password = Console.ReadLine();
+
+            currentUser = userRepository.Login(username, password);
+            Console.WriteLine(currentUser != null ? "✅ Login successful!" : "❌ Invalid credentials.");
+        }
+
+        static void RunUserMenu()
+        {
+            while (true)
             {
-                case "1":
-                    var users = userStore.GetAllUsers();
-                    Console.WriteLine("\nRegistered users:");
-                    foreach (var u in users)
-                    {
-                        Console.WriteLine($"- {u.Username}");
-                    }
-                    Pause();
-                    break;
+                Console.Clear();
+                Console.WriteLine($"=== Welcome, {currentUser.Username} ===");
 
-                case "2":
-                    Console.Write("Enter username to delete: ");
-                    string userToDelete = Console.ReadLine();
-                    if (userToDelete == "Admin")
-                    {
-                        Console.WriteLine("Cannot delete Admin.");
-                    }
-                    else
-                    {
-                        bool deleted = userStore.DeleteUser(userToDelete);
-                        Console.WriteLine(deleted ? "User deleted." : "User not found.");
-                    }
-                    Pause();
-                    break;
+                Console.WriteLine("\n1 - Add Password");
+                Console.WriteLine("2 - Find Password");
+                Console.WriteLine("3 - Logout");
 
-                case "3":
-                    return;
+                Console.Write("\nChoice: ");
+                var input = Console.ReadLine();
 
-                default:
-                    Console.WriteLine("Invalid input");
-                    Pause();
-                    break;
+                switch (input)
+                {
+                    case "1":
+                        AddPassword();
+                        break;
+                    case "2":
+                        FindPassword();
+                        break;
+                    case "3":
+                        currentUser = null;
+                        Main();
+                        return;
+                    default:
+                        Console.WriteLine("Invalid option.");
+                        break;
+                }
+
+                Console.WriteLine("\nPress Enter to continue...");
+                Console.ReadLine();
             }
         }
-    }
 
-    static void Pause()
-    {
-        Console.WriteLine("\nPress Enter to continue...");
-        Console.ReadLine();
+        static void AddPassword()
+        {
+            Console.Write("Enter resource name: ");
+            var resource = Console.ReadLine();
+            Console.Write("Enter password: ");
+            var password = Console.ReadLine();
+
+            passwordRepository.AddPassword(currentUser.Id, resource, password);
+            Console.WriteLine("🔒 Password saved.");
+        }
+
+        static void FindPassword()
+        {
+            Console.Write("Enter resource name: ");
+            var resource = Console.ReadLine();
+
+            var result = passwordRepository.FindPassword(currentUser.Id, resource);
+            Console.WriteLine(result != null
+                ? $"🔐 Password for '{resource}': {result}"
+                : "❌ Resource not found.");
+        }
+
+        static void RunAdminMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Admin Panel ===");
+
+                Console.WriteLine("\n1 - List All Users");
+                Console.WriteLine("2 - Delete User");
+                Console.WriteLine("3 - Logout");
+
+                Console.Write("\nChoice: ");
+                var choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        var users = userRepository.GetAllUsers();
+                        Console.WriteLine("\nUsers:");
+                        foreach (var user in users)
+                        {
+                            Console.WriteLine($"- {user.Username} (ID: {user.Id})");
+                        }
+                        break;
+                    case "2":
+                        Console.Write("Enter username to delete: ");
+                        var uname = Console.ReadLine();
+                        bool deleted = userRepository.DeleteUser(uname);
+                        Console.WriteLine(deleted ? "✅ User deleted." : "❌ User not found.");
+                        break;
+                    case "3":
+                        currentUser = null;
+                        Main();
+                        return;
+                    default:
+                        Console.WriteLine("Invalid choice.");
+                        break;
+                }
+
+                Console.WriteLine("\nPress Enter to continue...");
+                Console.ReadLine();
+            }
+        }
     }
 }

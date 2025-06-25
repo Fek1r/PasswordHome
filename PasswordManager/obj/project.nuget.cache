@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "YVtTZ7vu58w=",
+  "dgSpecHash": "Sk8ec3/8CxM=",
   "success": true,
   "projectFilePath": "/Users/fek1r/PasswordHome/PasswordManager/PasswordManager.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/Users/fek1r/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.2/microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
+    "/Users/fek1r/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.2/microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
+    "/Users/fek1r/.nuget/packages/npgsql/9.0.3/npgsql.9.0.3.nupkg.sha512"
+  ],
   "logs": []
 }
