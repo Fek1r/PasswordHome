@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using PasswordManager.Models;
 using PasswordManager.Repositories;
 
 namespace PasswordManager.GUI.ViewModels
@@ -36,33 +37,36 @@ namespace PasswordManager.GUI.ViewModels
             set { _message = value; OnPropertyChanged(); }
         }
 
-        public ICommand LoginCommand => new RelayCommand(_ =>
+        private User? _loggedInUser;
+        public User? LoggedInUser
+        {
+            get => _loggedInUser;
+            set { _loggedInUser = value; OnPropertyChanged(); }
+        }
+
+        public ICommand LoginCommand => new RelayCommand(obj =>
         {
             var user = _userRepository.Login(Username, Password);
-            Message = user != null ? "✅ Login success!" : "❌ Login failed.";
+            if (user != null)
+            {
+                LoggedInUser = user;
+                Message = $"✅ Welcome, {user.Username}!";
+                // TODO: Add navigation logic here if needed
+            }
+            else
+            {
+                Message = "❌ Invalid credentials.";
+            }
         });
 
-        public ICommand RegisterCommand => new RelayCommand(_ =>
+        public ICommand RegisterCommand => new RelayCommand(obj =>
         {
             var success = _userRepository.Register(Username, Password);
-            Message = success ? "✅ Registered!" : "❌ Username taken.";
+            Message = success ? "✅ Registration successful!" : "❌ Username already exists.";
         });
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged([CallerMemberName] string? name = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-    }
-
-    public class RelayCommand : ICommand
-    {
-        private readonly Action<object?> _execute;
-
-        public RelayCommand(Action<object?> execute) => _execute = execute;
-
-        public bool CanExecute(object? parameter) => true;
-
-        public void Execute(object? parameter) => _execute(parameter);
-
-        public event EventHandler? CanExecuteChanged;
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

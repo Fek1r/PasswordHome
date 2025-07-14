@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:PasswordManager.GUI.ViewModels"
+        x:Class="PasswordManager.GUI.Views.AdminWindow"
+        x:DataType="vm:AdminDashboardViewModel"
+        Width="500" Height="350" Title="Admin Panel">
+    <StackPanel Margin="10" Spacing="10">
+        <TextBlock Text="All Users:" FontWeight="Bold"/>
+        <ListBox Items="{Binding Users}" Height="150">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:User">
+                    <TextBlock Text="{Binding Username}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBox Watermark="Username to delete" Text="{Binding UsernameToDelete}"/>
+        <Button Content="Delete" Command="{Binding DeleteUserCommand}"/>
+        <TextBlock Text="{Binding Message}"/>
+    </StackPanel>
+</Window>

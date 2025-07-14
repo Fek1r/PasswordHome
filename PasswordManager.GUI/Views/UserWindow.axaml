@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:PasswordManager.GUI.ViewModels"
+        x:Class="PasswordManager.GUI.Views.UserWindow"
+        x:DataType="vm:UserDashboardViewModel"
+        Width="400" Height="300" Title="User Panel">
+    <StackPanel Margin="10" Spacing="10">
+        <TextBox Watermark="Resource" Text="{Binding Resource}" />
+        <TextBox Watermark="Password" Text="{Binding Password}" />
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Content="Add" Command="{Binding AddPasswordCommand}" />
+            <Button Content="Find" Command="{Binding FindPasswordCommand}" />
+        </StackPanel>
+        <TextBlock Text="{Binding Result}" />
+    </StackPanel>
+</Window>
